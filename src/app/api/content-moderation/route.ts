@@ -461,12 +461,12 @@ async function analyzeImageWithGemini(
       Post Content: ${content}
       Post Category: ${topic}
 
-      Please evaluate the image based on:
-      1. Is it appropriate for a university environment? (No gore, violence, explicit content, etc.)
-      2. Is it relevant to the post title and content?
-      3. Does it look authentic/real for its context?
+      Please evaluate the image with a lenient, inclusive approach:
+      1. Is it appropriate for a university environment? Only flag clear gore, violence, or explicit content.
+      2. Is it relevant to the post title and content? Allow reasonable interpretation; only flag when clearly unrelated.
+      3. Does it look authentic/real for its context? When in doubt, prefer isAppropriate and isRelevant as true.
 
-      Respond strictly in the following JSON format:
+      Respond in the following JSON format:
       {
         "isAppropriate": boolean,
         "isRelevant": boolean,
@@ -570,7 +570,8 @@ async function moderateWithHuggingFace(
     // Handle array response format
     const predictions = Array.isArray(result) ? result[0] : result;
 
-    // Check if any toxic label has high probability (>0.3 for very strict detection)
+    // Check if any toxic label has high probability (>0.5 for less strict detection)
+    const TOXICITY_THRESHOLD = 0.5;
     if (predictions && Array.isArray(predictions)) {
       // Handle different model response formats
       const toxicLabels = [
@@ -601,21 +602,20 @@ async function moderateWithHuggingFace(
             maxScore = score;
             detectedLabel = label;
           }
-          // Very strict threshold (0.3) to catch more abuse
-          if (score > 0.3) {
+          if (score > TOXICITY_THRESHOLD) {
             flags.push(label.replace(/_/g, "_"));
           }
         }
 
         // Also check for LABEL_0, LABEL_1 format (some models use this)
-        if (label.includes("label") && score > 0.3) {
+        if (label.includes("label") && score > TOXICITY_THRESHOLD) {
           flags.push("toxic_content");
           maxScore = Math.max(maxScore, score);
         }
       }
 
-      // Very strict threshold - reject if any toxicity detected above 30%
-      if (maxScore > 0.3) {
+      // Reject only when toxicity confidence is above threshold (50%)
+      if (maxScore > TOXICITY_THRESHOLD) {
         return {
           isHateSpeech: true,
           reason: `Detected ${detectedLabel || "toxic"} content (confidence: ${Math.round(maxScore * 100)}%)`,
@@ -662,10 +662,10 @@ function checkUniversityAppropriateness(
     }
   }
 
-  // Check content length (too short might be spam)
-  if (content.trim().length < 10) {
+  // Check content length (too short might be spam) - lenient minimum
+  if (content.trim().length < 5) {
     flags.push("too_short");
-    confidenceScore -= 20;
+    confidenceScore -= 15;
   }
 
   // Check if content is relevant to topic
@@ -715,10 +715,13 @@ function checkUniversityAppropriateness(
 
   if (!isRelevant) {
     flags.push("not_relevant");
-    confidenceScore -= 25;
+    confidenceScore -= 20;
   }
 
-  const isAuthentic = confidenceScore >= 50 && flags.length === 0;
+  // Less strict: allow content with score >= 45 and at most one minor flag
+  const isAuthentic =
+    confidenceScore >= 45 &&
+    (flags.length === 0 || (flags.length === 1 && flags[0] === "not_relevant"));
 
   let reason = "";
   if (!isAuthentic) {

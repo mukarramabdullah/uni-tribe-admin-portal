@@ -581,10 +581,13 @@ export const addNotification = async (
   const { imageData: _imageData, expiresAt, ...notificationData } = data;
 
   // If imageData is provided, ensure imageText is also set (if not already)
-  let finalNotificationData = { ...notificationData };
-  if (data.imageData && !data.imageText) {
-    finalNotificationData.imageText = `data:${data.imageData.mimeType};base64,${data.imageData.data}`;
-  }
+  const finalNotificationData =
+    data.imageData && !data.imageText
+      ? {
+          ...notificationData,
+          imageText: `data:${data.imageData.mimeType};base64,${data.imageData.data}`,
+        }
+      : { ...notificationData };
 
   return await addDocumentWithBase64(
     "notifications",

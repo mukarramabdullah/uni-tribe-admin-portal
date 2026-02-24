@@ -10,10 +10,6 @@ const nextConfig = {
       },
     ];
   },
-  // Skip ESLint during builds (run lint separately)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   // Allow build to continue with warnings
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,

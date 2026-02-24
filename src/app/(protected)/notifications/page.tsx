@@ -584,7 +584,7 @@ const Notifications: React.FC = () => {
                       .includes(userSearchTerm.toLowerCase()),
                 ).length === 0 && (
                   <p className="text-center text-sm text-gray-500 py-4">
-                    No users found matching "{userSearchTerm}"
+                    No users found matching &quot;{userSearchTerm}&quot;
                   </p>
                 )}
               </div>

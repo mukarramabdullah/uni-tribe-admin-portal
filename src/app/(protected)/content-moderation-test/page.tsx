@@ -336,7 +336,7 @@ const TestContentUpload: React.FC = () => {
                             </div>
                           </div>
                           <p className="mt-2 text-xs italic text-gray-600">
-                            " {verificationResult.imageAnalysis.description} "
+                            &quot; {verificationResult.imageAnalysis.description} &quot;
                           </p>
                         </div>
                       )}

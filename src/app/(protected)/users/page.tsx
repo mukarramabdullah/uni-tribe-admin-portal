@@ -130,7 +130,7 @@ const Users: React.FC = () => {
     try {
       const photoData = await fileToBase64(selectedFile);
       const userId = selectedUser._id || '';
-      await updateUserProfilePicture(userId, photoData);
+      await updateUserProfilePicture(userId, photoData.data);
       
       // Log profile picture update
       if (currentUser) {

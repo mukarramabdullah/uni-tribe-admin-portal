@@ -56,7 +56,7 @@ router.post(
           "reason": "Short explanation of the decision"
         }
 
-        Be strict, professional, and unbiased in your evaluation.
+        Be fair and balanced; only reject clearly inappropriate, misleading, or abusive content. When in doubt, prefer to approve.
       `;
 
       const result = await model.generateContent(prompt);
